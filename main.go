@@ -5,6 +5,9 @@ import (
 "log"
 "sync/atomic"
 "fmt"
+
+"github.com/joho/godotenv"
+import _ "github.com/lib/pq"
 )
 
 func handlerReadiness(w http.ResponseWriter, r *http.Request) {
