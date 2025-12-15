@@ -3,15 +3,16 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
-func handlerChrip(w http.ResponseWriter, r *http.Request) {
+func handlerChripValidate(w http.ResponseWriter, r *http.Request) {
 	type chirpParams struct {
 		Body string `json:"body"`
 	}
 
 	type validResponce struct {
-		Valid bool `json:"valid"`
+		CleanedBody string `json:"cleaned_body"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -28,7 +29,27 @@ func handlerChrip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	badWords := map[string]struct{}{
+		"kerfuffle": {},
+		"sharbert": {},
+		"fornax": {},
+	}
+
+	cleaned := getCleanedBody(params.Body, badWords)
+
 	respondWithJSON(w, http.StatusOK, validResponce{
-		Valid: true,
+		CleanedBody: cleaned,
 	})
+}
+
+func getCleanedBody(body string, badWords map[string]struct{}) string {
+	words := strings.Split(body, " ")
+
+	for i, word := range words {
+		word = strings.ToLower(word)
+		if _, ok := badWords[word]; ok {
+			words[i] = "****"
+		}
+	}
+	return strings.Join(words, " ")
 }
