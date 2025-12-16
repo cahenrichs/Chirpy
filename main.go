@@ -1,13 +1,16 @@
 package main
 
 import (
+"github.com/cahenrichs/Chirpy/internal/database"
 "net/http"
 "log"
 "sync/atomic"
 "fmt"
+"database/sql"
+"os"
 
 "github.com/joho/godotenv"
-import _ "github.com/lib/pq"
+ _ "github.com/lib/pq"
 )
 
 func handlerReadiness(w http.ResponseWriter, r *http.Request) {
@@ -18,6 +21,7 @@ func handlerReadiness(w http.ResponseWriter, r *http.Request) {
 
 type apiConfig struct {
 	fileserverHits atomic.Int32
+	db *database.Queries
 }
 
 func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
@@ -53,7 +57,23 @@ func (cfg *apiConfig) handlerReset (w http.ResponseWriter, r *http.Request) {
 func main() {
 	const filepathRoot = "."
 	const port = "8080"
-	apiCfg := apiConfig{}
+	
+
+	godotenv.Load(".env")
+	dbUrl := os.Getenv("DB_URL")
+	if dbUrl == "" {
+		log.Fatal("DB_URL must be set")
+	}
+
+	db, err := sql.Open("postgres", dbUrl)
+	if err != nil {
+		log.Fatalf("Error opening database %s", err)
+	}
+
+	dbQueries := database.New(db)
+	apiCfg := apiConfig{
+		db: dbQueries,
+	}
 
 	mux := http.NewServeMux()
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(http.StripPrefix( "/app/", http.FileServer(http.Dir(filepathRoot)))))
