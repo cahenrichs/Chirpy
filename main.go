@@ -22,6 +22,7 @@ func handlerReadiness(w http.ResponseWriter, r *http.Request) {
 type apiConfig struct {
 	fileserverHits atomic.Int32
 	db *database.Queries
+	platform	string
 }
 
 func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
@@ -47,9 +48,15 @@ w.Write([]byte(page))
 }
 
 func (cfg *apiConfig) handlerReset (w http.ResponseWriter, r *http.Request) {
+	if cfg.platform == "dev" {
+		w.WriteHeader(http.StatusForbidden)
+		w.Write([]byte("Reset is only allowed in dev env"))
+		return
+	}
+	
 	cfg.fileserverHits.Store(0)
-
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	cfg.db.Reset(r.Context())
+	/*w.Header().Set("Content-Type", "text/plain; charset=utf-8") */
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
 }
@@ -88,6 +95,7 @@ func main() {
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", apiCfg.handlerReset)
 	mux.HandleFunc("POST /api/validate_chirp", handlerChripValidate)
+	mux.HandleFunc("POST /api/users", apiCfg.handlerUsersCreate)
 
 
 	log.Printf("Serving files from %s on port: %s\n", filepathRoot, port)
