@@ -98,6 +98,7 @@ func main() {
 	mux.HandleFunc("POST /admin/reset", apiCfg.handlerReset)
 	mux.HandleFunc("POST /api/users", apiCfg.handlerUsersCreate)
 	mux.HandleFunc("POST /api/chirps", apiCfg.handlerChirpCreate)
+	mux.HandleFunc("POST /api/login", apiCfg.handlerLogin)
 
 
 	log.Printf("Serving files from %s on port: %s\n", filepathRoot, port)
