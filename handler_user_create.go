@@ -5,6 +5,9 @@ import (
 "net/http"
 "time"
 
+"github.com/cahenrichs/Chirpy/internal/database"
+"github.com/cahenrichs/Chirpy/internal/auth"
+
 "github.com/google/uuid"
 )
 
@@ -47,7 +50,7 @@ func (cfg *apiConfig) handlerUsersCreate(w http.ResponseWriter, r *http.Request)
 
 	user, err := cfg.db.CreateUser(r.Context(), database.CreateUserParams{
 		Email: params.Email,
-		HashPassword: hashedPassword,
+		HashedPassword: hashedPassword,
 	})
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, "Couldn't create user", err)
