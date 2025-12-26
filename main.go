@@ -11,6 +11,8 @@ import (
 
 "github.com/joho/godotenv"
  _ "github.com/lib/pq"
+
+"github.com/pressly/goose/v3"
 )
 
 func handlerReadiness(w http.ResponseWriter, r *http.Request) {
@@ -75,6 +77,10 @@ func main() {
 	db, err := sql.Open("postgres", dbUrl)
 	if err != nil {
 		log.Fatalf("Error opening database %s", err)
+	}
+
+	if err := goose.Up(db, "sql/schema"); err != nil {
+		log.Fatalf("failed to run migrations: %v", err)
 	}
 
 	dbQueries := database.New(db)
