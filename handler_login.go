@@ -17,6 +17,7 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	type response struct {
 		User
 		Token	string `json:"token"`
+		RefreshToken string `json:"token"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -56,6 +57,23 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	refreshToken, err := auth.MakeRefreashToken()
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't create refresh Token", err)
+		return
+	}
+
+	_, err := cfg.db.CreateRefreashToken(r.Context(), database.CreateRefreashTokenParams{
+		UserID: user.ID,
+		Token: refreshToken,
+		ExpiresAt: time.Now().UTC().Add(time.Hour * 24 * 60),
+	})
+
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't save refresh token", err)
+		return
+	}
+
 
 	respondWithJSON(w, http.StatusOK, response{
 		User: User{
@@ -65,6 +83,7 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 			Email:	   user.Email,
 		},
 		Token:	accessToken,
+		RefreshToken: refreshToken,
 	})
 		
 
