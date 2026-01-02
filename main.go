@@ -106,7 +106,8 @@ func main() {
 	mux.HandleFunc("POST /api/users", apiCfg.handlerUsersCreate)
 	mux.HandleFunc("POST /api/chirps", apiCfg.handlerChirpCreate)
 	mux.HandleFunc("POST /api/login", apiCfg.handlerLogin)
-
+	mux.HandleFunc("POST /api/refresh", apiCfg.handlerRefresh)
+	mux.HandleFunc("POST /api/reset", apiCfg.handlerReset)
 
 	log.Printf("Serving files from %s on port: %s\n", filepathRoot, port)
 	log.Fatal(srv.ListenAndServe())

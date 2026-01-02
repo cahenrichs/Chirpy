@@ -2,9 +2,11 @@ package main
 
 import (
 	"github.com/cahenrichs/Chirpy/internal/auth"
+	"github.com/cahenrichs/Chirpy/internal/database"
 	"encoding/json"
 	"net/http"
 	"time"
+	"github.com/google/uuid"
 )
 
 func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +65,7 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := cfg.db.CreateRefreashToken(r.Context(), database.CreateRefreashTokenParams{
+	_, err = cfg.db.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
 		UserID: user.ID,
 		Token: refreshToken,
 		ExpiresAt: time.Now().UTC().Add(time.Hour * 24 * 60),

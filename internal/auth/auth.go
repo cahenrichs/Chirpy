@@ -7,6 +7,8 @@ import (
 	"time"
 	"net/http"
 	"strings"
+	"crypto/rand"
+	"encoding/hex"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
