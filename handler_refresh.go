@@ -21,7 +21,7 @@ func (cfg *apiConfig) handlerRefresh(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//look up the refresh token
-	user, err := cfg.db.GetUserFromRefreashToken(r.Context(), refreshToken) 
+	user, err := cfg.db.GetUserFromRefreshToken(r.Context(), refreshToken) 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Couldn't get user for refreash token", err)
 		return

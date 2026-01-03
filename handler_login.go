@@ -12,14 +12,14 @@ import (
 func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Password string `json:"password"`
-		Email string `json:"Email"`
+		Email string `json:"email"`
 		ExpiresInSeconds int `json:"expires_in_seconds"`
 	}
 
 	type response struct {
 		User
 		Token	string `json:"token"`
-		RefreshToken string `json:"token"`
+		RefreshToken string `json:"refresh_token"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -42,16 +42,11 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expirationTime := time.Hour
-
-	if params.ExpiresInSeconds > 0 && params.ExpiresInSeconds <= 3600 {
-    	expirationTime = time.Duration(params.ExpiresInSeconds) * time.Second
-	}
 
 	accessToken, err := auth.MakeJWT(
 		user.ID,
 		cfg.jwtSecret,
-		expirationTime,
+		time.Hour,
 	)
 
 	if err != nil {
@@ -59,14 +54,17 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	refreshToken, err := auth.MakeRefreashToken()
+	refreshToken, err := auth.MakeRefreshToken()
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create refresh Token", err)
 		return
 	}
 
 	_, err = cfg.db.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
-		UserID: user.ID,
+		UserID: uuid.NullUUID{
+			UUID: user.ID,
+			Valid: true,
+		},
 		Token: refreshToken,
 		ExpiresAt: time.Now().UTC().Add(time.Hour * 24 * 60),
 	})
