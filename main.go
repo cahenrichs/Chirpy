@@ -26,6 +26,7 @@ type apiConfig struct {
 	db *database.Queries
 	platform	string
 	jwtSecret	string
+	polkaKey	string
 }
 
 func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
@@ -84,9 +85,21 @@ func main() {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET env varible not set")
+	}
+
+	polkaKey := os.Getenv("POLKA_KEY")
+	if polkaKey == "" {
+		log.Fatal("POLKA_KEY env varible not set")
+	}
+
 	dbQueries := database.New(db)
 	apiCfg := apiConfig{
 		db: dbQueries,
+		jwtSecret:	jwtSecret,
+		polkaKey:	polkaKey,
 	}
 
 	mux := http.NewServeMux()
