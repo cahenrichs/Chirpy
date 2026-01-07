@@ -37,6 +37,37 @@ func (cfg *apiConfig) handlerChirpsRetrieve(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+
+	authorID := uuid.Nil
+authorIDString := r.URL.Query().Get("author_id")
+if authorIDString != "" {
+    authorID, err = uuid.Parse(authorIDString)
+    if err != nil {
+        // 400
+        return
+    }
+}
+
+chirps := []Chirp{}
+for _, dbChirp := range dbChirps {
+    if authorID != uuid.Nil && dbChirp.UserID != authorID {
+        continue
+    }
+    
+	chirps = append(chirps, Chirp{
+        ID:        dbChirp.ID,
+        CreatedAt: dbChirp.CreatedAt,
+        UpdatedAt: dbChirp.UpdatedAt,
+        UserID:    dbChirp.UserID,
+        Body:      dbChirp.Body,
+    })
+	
+	respondWithJSON(w, http.StatusOK, chirps)
+
+	}
+}
+
+/*
 	chirps := []Chirp{}
 	for _, dbChirp := range dbChirps {
 		chirps = append(chirps, Chirp{
@@ -50,3 +81,4 @@ func (cfg *apiConfig) handlerChirpsRetrieve(w http.ResponseWriter, r *http.Reque
 
 	respondWithJSON(w, http.StatusOK, chirps)
 }
+*/
